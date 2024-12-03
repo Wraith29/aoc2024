@@ -62,7 +62,7 @@ func createFiles(day int) error {
 		return err
 	}
 
-	cpCmd := exec.Command("cp", "template/template.go", fmt.Sprintf("days/%d/main.go"))
+	cpCmd := exec.Command("cp", "template/template.go", fmt.Sprintf("days/%d/main.go", day))
 
 	return cpCmd.Run()
 }
