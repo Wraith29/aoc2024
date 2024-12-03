@@ -69,11 +69,12 @@ func dist(a, b int) int {
 }
 
 type report struct {
+	idx    int
 	levels []int
 	isDesc bool
 }
 
-func createReport(line string) (*report, error) {
+func createReport(idx int, line string) (*report, error) {
 	levels := make([]int, 0)
 
 	for _, level := range strings.Split(line, " ") {
@@ -89,58 +90,73 @@ func createReport(line string) (*report, error) {
 		levels = append(levels, val)
 	}
 
-	left := 0
-	right := 0
-	idx := 0
-	isDesc := true
-
-	for left == right {
-		left = levels[idx]
-		right = levels[idx+1]
-
-		idx += 1
-	}
-
-	if left < right {
-		isDesc = false
-	}
+	isDesc := levels[0] > levels[len(levels)-1]
 
 	return &report{
+		idx,
 		levels,
 		isDesc,
 	}, nil
 }
 
-func (r *report) isSafe() bool {
-	prevLevel := r.levels[0]
+func checkLevels(levels []int, isDesc bool) (bool, int) {
+	prevLevel := levels[0]
 
-	for _, level := range r.levels[1:] {
+	for idx, level := range levels[1:] {
 		distance := dist(level, prevLevel)
 		if distance > 3 || distance < 1 {
-			return false
+			return false, idx + 1
 		}
 
-		if (r.isDesc && level > prevLevel) || (!r.isDesc && level < prevLevel) {
-			return false
+		if (isDesc && level > prevLevel) || (!isDesc && level < prevLevel) {
+			return false, idx + 1
 		}
 
 		prevLevel = level
 	}
 
-	return true
+	return true, -1
 }
 
+func copyAndRemove(s []int, i int) []int {
+	new := make([]int, len(s))
+
+	copy(new, s)
+
+	return append(new[:i], new[i+1:]...)
+}
+
+func (r report) isSafeWithTolerance() bool {
+	safe, idx := checkLevels(r.levels, r.isDesc)
+	if safe {
+		return safe
+	}
+
+	rightSide := copyAndRemove(r.levels, idx)
+	if s, _ := checkLevels(rightSide, r.isDesc); s {
+		return true
+	}
+
+	leftSide := copyAndRemove(r.levels, idx-1)
+	if s, _ := checkLevels(leftSide, r.isDesc); s {
+		return true
+	}
+
+	return false
+}
+
+// Answer: 486
 func part1(input string) (int, error) {
 	safe := 0
 
-	for _, line := range strings.Split(input, "\n") {
-		rep, err := createReport(line)
+	for idx, line := range strings.Split(input, "\n") {
+		rep, err := createReport(idx, line)
 
 		if err != nil {
 			return -1, err
 		}
 
-		if rep.isSafe() {
+		if isSafe, _ := checkLevels(rep.levels, rep.isDesc); isSafe {
 			safe += 1
 		}
 	}
@@ -148,16 +164,21 @@ func part1(input string) (int, error) {
 	return safe, nil
 }
 
+// Answer: 540
 func part2(input string) (int, error) {
 	safe := 0
 
-	// for _, line := range strings.Split(input, "\n") {
-	// rep, err := createReport(line)
+	for idx, line := range strings.Split(input, "\n") {
+		rep, err := createReport(idx, line)
 
-	// if err != nil {
-	// return -1, nil
-	// }
-	// }
+		if err != nil {
+			return -1, nil
+		}
+
+		if rep.isSafeWithTolerance() {
+			safe += 1
+		}
+	}
 
 	return safe, nil
 }
