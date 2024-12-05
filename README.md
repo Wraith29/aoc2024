@@ -29,13 +29,13 @@ Which will create a new project under `days/<day_number>`
 
 ### Day 4
 
-- [ ] Part 1:
-- [ ] Part 2:
+- [x] Part 1: 2654
+- [x] Part 2: 1990
 
 ### Day 5
 
-- [ ] Part 1:
-- [ ] Part 2:
+- [x] Part 1: 5275
+- [x] Part 2: 6191
 
 ### Day 6
 

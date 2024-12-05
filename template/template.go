@@ -61,9 +61,13 @@ func main() {
 }
 
 func part1(input string) (int, error) {
-	return 0, nil
+	result := 0
+
+	return result, nil
 }
 
 func part2(input string) (int, error) {
-	return 0, nil
+	result := 0
+
+	return result, nil
 }
