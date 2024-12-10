@@ -137,6 +137,21 @@ func (g *Grid) checkTrail(c *Cell) int {
 	return validRoutes
 }
 
+func (g *Grid) checkDistinctTrails(c *Cell) int {
+	validRoutes := 0
+
+	for _, neighbour := range g.getCellNeighbours(c) {
+		if neighbour.height == c.height+1 && neighbour.height == 9 {
+			validRoutes++
+			continue
+		} else if neighbour.height == c.height+1 {
+			validRoutes += g.checkDistinctTrails(neighbour)
+		}
+	}
+
+	return validRoutes
+}
+
 func part1(input string) (int, error) {
 	result := 0
 
@@ -151,9 +166,7 @@ func part1(input string) (int, error) {
 				continue
 			}
 			grid.reset()
-			trails := grid.checkTrail(cell)
-
-			result += trails
+			result += grid.checkTrail(cell)
 		}
 	}
 
@@ -162,6 +175,21 @@ func part1(input string) (int, error) {
 
 func part2(input string) (int, error) {
 	result := 0
+
+	grid, err := newGrid(input)
+	if err != nil {
+		return -1, err
+	}
+
+	for _, row := range grid.cells {
+		for _, cell := range row {
+			if cell.height != 0 {
+				continue
+			}
+			grid.reset()
+			result += grid.checkDistinctTrails(cell)
+		}
+	}
 
 	return result, nil
 }
