@@ -56,3 +56,8 @@ Which will create a new project under `days/<day_number>`
 
 - [x] Part 1: 6344673854800
 - [x] Part 2: 6360363199987
+
+### Day 10
+
+- [x] Part 1: 430
+- [x] Part 2: 928
