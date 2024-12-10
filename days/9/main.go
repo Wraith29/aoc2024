@@ -303,9 +303,9 @@ func (b *DynamicBlock) hasContiguousSpace(size int) (int, bool) {
 	return -1, false
 }
 
-func (b *DynamicBlock) insert(memory []int, startIdx int) {
-	for idx := startIdx; idx < startIdx+len(memory); idx++ {
-		b.memory[idx] = memory[idx-startIdx]
+func (b *DynamicBlock) insert(file *File, startIdx int) {
+	for idx := startIdx; idx < startIdx+file.size; idx++ {
+		b.memory[idx] = file.id
 	}
 }
 
@@ -338,25 +338,24 @@ func part2(input string) (int, error) {
 	blocks := getDynamicBlocks(files)
 
 	for fileId > 0 {
-		for _, block := range blocks {
-			if block.full {
+		for idx, block := range blocks {
+			if block.full || fileId <= idx {
 				continue
 			}
 
 			file, _ := fileMap[fileId]
-			memory := file.toSpacedIntArray()
+			// memory := file.toSpacedIntArray()
 
-			if len(memory) > len(block.memory) {
+			if file.size > len(block.memory) {
 				continue
 			}
 
-			startIdx, fits := block.hasContiguousSpace(len(memory))
-
+			startIdx, fits := block.hasContiguousSpace(file.size)
 			if !fits {
 				continue
 			}
 
-			block.insert(memory, startIdx)
+			block.insert(file, startIdx)
 
 			for idx := len(blocks) - 1; idx >= 0; idx-- {
 				if blocks[idx].initialId == fileId {
