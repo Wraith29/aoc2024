@@ -52,13 +52,15 @@ func main() {
 		logErr(err)
 	}
 
+	fmt.Printf("Part 1: %d\n", p1)
+
 	p2, err := part2(input)
 
 	if err != nil {
 		logErr(err)
 	}
 
-	fmt.Printf("Part 1: %d\nPart 2: %d\n", p1, p2)
+	fmt.Printf("Part 2: %d\n", p2)
 }
 
 func insert(original []int, splitIndex, left, right int) []int {
@@ -81,7 +83,6 @@ type Transformer struct {
 }
 
 func newTransformer(fn func(int) ([]int, error)) Transformer {
-
 	return Transformer{
 		fn:    fn,
 		cache: make(map[int][]int),
