@@ -63,90 +63,7 @@ func main() {
 	fmt.Printf("Part 2: %d\n", p2)
 }
 
-func insert(original []int, splitIndex, left, right int) []int {
-	result := make([]int, 0)
-
-	leftHalf := original[:splitIndex]
-
-	rightHalf := original[splitIndex+1:]
-
-	result = append(result, leftHalf...)
-	result = append(result, left, right)
-	result = append(result, rightHalf...)
-
-	return result
-}
-
-type Transformer struct {
-	fn    func(int) ([]int, error)
-	cache map[int][]int
-}
-
-func newTransformer(fn func(int) ([]int, error)) Transformer {
-	return Transformer{
-		fn:    fn,
-		cache: make(map[int][]int),
-	}
-}
-
-func (t *Transformer) transform(stone int) ([]int, error) {
-	if value, ok := t.cache[stone]; ok {
-		return value, nil
-	}
-
-	result, err := t.fn(stone)
-	if err != nil {
-		return nil, err
-	}
-	t.cache[stone] = result
-
-	return result, nil
-}
-
-type Stone struct {
-	idx    int
-	buffer []int
-}
-
-func getStones(input string) ([]*Stone, error) {
-	result := make([]*Stone, 0)
-
-	for idx, stone := range strings.Split(strings.Trim(input, " "), " ") {
-		value, err := strconv.Atoi(stone)
-		if err != nil {
-			return nil, err
-		}
-
-		result = append(result, &Stone{
-			idx:    idx,
-			buffer: []int{value},
-		})
-	}
-
-	return result, nil
-}
-
-func (s *Stone) applyTransformation(t *Transformer, count int) error {
-	for n := 0; n < count; n++ {
-		println(n, len(s.buffer))
-
-		for idx := 0; idx < len(s.buffer); idx++ {
-			transformed, err := t.transform(s.buffer[idx])
-			if err != nil {
-				return err
-			}
-
-			if len(transformed) == 1 {
-				s.buffer[idx] = transformed[0]
-			} else {
-				s.buffer = insert(s.buffer, idx, transformed[0], transformed[1])
-				idx++
-			}
-		}
-	}
-
-	return nil
-}
+var cache = make(map[int][]int)
 
 func transformStone(stone int) ([]int, error) {
 	if stone == 0 {
@@ -154,16 +71,13 @@ func transformStone(stone int) ([]int, error) {
 	}
 
 	digits := strconv.Itoa(stone)
-
 	if len(digits)%2 == 0 {
-		halfIdx := len(digits) / 2
-
-		left, err := strconv.Atoi(digits[:halfIdx])
+		left, err := strconv.Atoi(digits[:len(digits)/2])
 		if err != nil {
 			return nil, err
 		}
 
-		right, err := strconv.Atoi(digits[halfIdx:])
+		right, err := strconv.Atoi(digits[len(digits)/2:])
 		if err != nil {
 			return nil, err
 		}
@@ -174,6 +88,35 @@ func transformStone(stone int) ([]int, error) {
 	return []int{stone * 2024}, nil
 }
 
+func getTransformation(stone int) ([]int, error) {
+	if result, ok := cache[stone]; ok {
+		return result, nil
+	}
+
+	result, err := transformStone(stone)
+	if err != nil {
+		return nil, err
+	}
+
+	cache[stone] = result
+	return result, nil
+}
+
+func getStones(input string) (map[int]int, error) {
+	stones := make(map[int]int)
+
+	for _, stoneValue := range strings.Split(strings.Trim(input, " "), " ") {
+		value, err := strconv.Atoi(stoneValue)
+		if err != nil {
+			return nil, err
+		}
+
+		stones[value]++
+	}
+
+	return stones, nil
+}
+
 func part1(input string) (int, error) {
 	result := 0
 
@@ -182,14 +125,24 @@ func part1(input string) (int, error) {
 		return -1, err
 	}
 
-	transformer := newTransformer(transformStone)
+	for count := 0; count < 25; count++ {
+		newStones := make(map[int]int)
 
-	for _, stone := range stones {
-		if err = stone.applyTransformation(&transformer, 25); err != nil {
-			return -1, err
+		for stone, value := range stones {
+			transformedStones, err := getTransformation(stone)
+			if err != nil {
+				return -1, err
+			}
+
+			for _, newStone := range transformedStones {
+				newStones[newStone] += value
+			}
+			stones = newStones
 		}
+	}
 
-		result += len(stone.buffer)
+	for _, count := range stones {
+		result += count
 	}
 
 	return result, nil
@@ -203,14 +156,24 @@ func part2(input string) (int, error) {
 		return -1, err
 	}
 
-	transformer := newTransformer(transformStone)
+	for count := 0; count < 75; count++ {
+		newStones := make(map[int]int)
 
-	for _, stone := range stones {
-		if err = stone.applyTransformation(&transformer, 75); err != nil {
-			return -1, err
+		for stone, value := range stones {
+			transformedStones, err := getTransformation(stone)
+			if err != nil {
+				return -1, err
+			}
+
+			for _, newStone := range transformedStones {
+				newStones[newStone] += value
+			}
+			stones = newStones
 		}
+	}
 
-		result += len(stone.buffer)
+	for _, count := range stones {
+		result += count
 	}
 
 	return result, nil
